@@ -4,7 +4,7 @@ The goal of this document is to demystify the OLS estimation of treatment effect
 
 The 2016 + 2020 US presidential elections are considered as an experiment, with the Democratic nominee change from Hillary Clinton to Joe Biden being the treatment/intervention.
 
-This is just a numerical exercise and not a causal analysis.
+This is just a numerical exercise and not a causal analysis. Also, as there are four parameters and four data points, there is a perfect fit.
 
 - DiD: 4,184,084 votes
 - ATE: 13,584,092 votes
@@ -15,7 +15,7 @@ Republican|62,984,828|74,216,154|+17.83%
 Democrat|65,853,514|81,268,924|+23.41%
 Total|128,838,342|155,485,078|+20.68%
 
-<mark>The #1 thing to take away from this is that when using OLS, DiD considers BOTH "before" AND "after" observations of the treated group to be "treated", whereas ATE only considers the "after" as treated.</mark>
+**The #1 thing to take away from this is that when using OLS, DiD considers BOTH "before" AND "after" observations of the treated group to be "treated", whereas ATE only considers the "after" as treated.**
 
 # DiD (difference-in-differences) manually
 
@@ -23,7 +23,7 @@ Total|128,838,342|155,485,078|+20.68%
 ---|---
 Republican gain|74,216,154 - 62,984,828 = 11,231,326
 Democrat gain|81,268,924 - 65,853,514 = 15,415,410
-DiD|15,415,410 - 11,231,326 = <mark>4,184,084</mark>
+DiD|15,415,410 - 11,231,326 = **4,184,084**
 
 # ATE (and ATT) manually
 
@@ -31,19 +31,19 @@ We don't observe the outcome if the treated weren't treated, or if the untreated
 
 party, election|treatment (Biden)|votes w/ treatment|votes w/o treatment|votes w - w/o (treatment effect)
 ---|---|---|---|---
-R 2016|0|?|62,984,828|.
-R 2020|0|?|74,216,154|.
-D 2016|0|?|65,853,514|.
-D 2020|1|81,268,924|?|.
+R 2016|0|?|62,984,828|? - 62,984,828
+R 2020|0|?|74,216,154|? -74,216,154
+D 2016|0|?|65,853,514|? - 65,853,514
+D 2020|1|81,268,924|?|81,268,924 - ?
 
 So we fill them in with the column average:
 
 party, election|treatment (Biden)|votes w/ treatment|votes w/o treatment|votes w - w/o (treatment effect)
 ---|---|---|---|---
-R 2016|0|<mark>81,268,924</mark>|62,984,828|18,284,096
-R 2020|0|<mark>81,268,924</mark>|74,216,154|7,052,770
-D 2016|0|<mark>81,268,924</mark>|65,853,514|15,415,410
-D 2020|1|81,268,924|<mark>67,684,832</mark>|13,584,092
+R 2016|0|**81,268,924**|62,984,828|18,284,096
+R 2020|0|**81,268,924**|74,216,154|7,052,770
+D 2016|0|**81,268,924**|65,853,514|15,415,410
+D 2020|1|81,268,924|**67,684,832**|13,584,092
 
 We only have one observation of Biden running (and winning 81,268,924 votes), so, strange though it may seem, that is our best guess (in this outrageously simple framework) for the votes he would have obtained in any other year or for any other party.
 
@@ -75,27 +75,30 @@ DiD is the estimated coefficient of the interaction term $\beta_3$:
 $$
 \begin{align*}
 votes & = \beta_0 \\
-        & + \beta_1\ treatment\_did \\
-        & + \beta_2\ time\_period \\
-        & + \beta_3\ treatment\_did \cdot time\_period \\
+        & + \beta_1\ treatment{\_}did \\
+        & + \beta_2\ time{\_}period \\
+        & + \beta_3\ treatment{\_}did \cdot time{\_}period \\
         & + u
 \end{align*}
 $$
 
-For DiD, also note:
+For DiD, also note the interpretation of the results:
 
-- const = 62984828 = <mark>R2016</mark>
-- const + time period = 62984828 + 11231326 = 74216154 = <mark>R2020</mark>
-- const + treatment = 62984828 + 2868686 = 65853514 = <mark>D2016</mark>
-- const + time period + treatment + interaction = 62984828 + 2868686 + 11231326 + 4184084 = 81268924 = <mark>D2020</mark>
+const|treatment|time period|interaction|row total|row total a.k.a.
+---|---|---|---|---|---
+62984828|.|.|.|62984828|R2016
+62984828|.|11231326|.|74216154|R2020
+62984828|2868686|.|.|65853514|D2016
+62984828|2868686|11231326|4184084|81268924|D2020
 
+## Table of variables:
 
-party, election|y (outcome, votes)|treatment|time period|interaction
----|---|---|---|---
-R 2016|62,984,828|0|0|0
-R 2020|74,216,154|0|1|0
-D 2016|65,853,514|1|0|0
-D 2020|81,268,924|1|1|1
+party, election|y (outcome, votes)|treatment_did|treatment_ate|time period|interaction
+---|---|---|---|---|---
+R 2016|62,984,828|0|0|0|0
+R 2020|74,216,154|0|0|1|0
+D 2016|65,853,514|1|0|0|0
+D 2020|81,268,924|1|1|1|1
 
 
 ```r
@@ -133,8 +136,8 @@ import statsmodels.api as sm
 
 index = ['R 2016', 'R 2020', 'D 2016', 'D 2020'] # for readability, not necessary
 X = pd.DataFrame({'treatment': [0, 0, 1, 1], 'time period': [0, 1, 0, 1]}, index=index)
-X['const'] = 1 # will create constant column [1, 1, 1, 1]
 X['interaction'] = X['treatment'] * X['time period']
+X['const'] = 1 # will create constant column [1, 1, 1, 1]
 
 # created these vote variables for readability & reusability
 R2016 = 62_984_828
@@ -143,22 +146,7 @@ D2016 = 65_853_514
 D2020 = 81_268_924
 y = pd.DataFrame({'votes': [R2016, R2020, D2016, D2020]}, index=index)
 
-print(X, "\n") # \n is newline
-print(y, "\n")
 print(sm.OLS(y, X[['const', 'treatment', 'time period', 'interaction']]).fit().params)
-
-#        treatment  time period  const  interaction
-#R 2016          0            0      1            0
-#R 2020          0            1      1            0
-#D 2016          1            0      1            0
-#D 2020          1            1      1            1
-
-#           votes
-#R 2016  62984828
-#R 2020  74216154
-#D 2016  65853514
-#D 2020  81268924 
-
 #const          62984828.0
 #treatment       2868686.0
 #time period    11231326.0
@@ -170,7 +158,6 @@ print(sm.OLS(y, X[['const', 'treatment', 'time period', 'interaction']]).fit().p
 # ATE
 X['treatment_ate'] = [0, 0, 0, 1]
 print(sm.OLS(y, X[['const', 'treatment_ate']]).fit().params)
-
 #const            67684832.0
 #treatment_ate    13584092.0
 ```
