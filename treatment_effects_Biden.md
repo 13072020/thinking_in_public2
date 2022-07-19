@@ -75,9 +75,9 @@ DiD is the estimated coefficient of the interaction term $\beta_3$:
 $$
 \begin{align*}
 votes & = \beta_0 \\
-        & + \beta_1\ treatment{\_}did \\
-        & + \beta_2\ time{\_}period \\
-        & + \beta_3\ treatment{\_}did \cdot time{\_}period \\
+        & + \beta_1\ treatment\_did \\
+        & + \beta_2\ time\_period \\
+        & + \beta_3\ treatment\_did \cdot time\_period \\
         & + u
 \end{align*}
 $$
