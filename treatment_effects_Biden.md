@@ -27,7 +27,7 @@ DiD|15,415,410 - 11,231,326 = **4,184,084**
 
 # ATE (and ATT) manually
 
-We don't observe the outcome if the treated weren't treated, or if the untreated were treated (the counterfactuals, '?'):
+We don't observe the outcome if the treated weren't treated, or if the untreated were treated. These are counterfactuals and marked as '?'.
 
 party, election|treatment (Biden)|votes w/ treatment|votes w/o treatment|votes w - w/o (treatment effect)
 ---|---|---|---|---
@@ -75,9 +75,9 @@ DiD is the estimated coefficient of the interaction term $\beta_3$:
 $$
 \begin{align*}
 votes & = \beta_0 \\
-        & + \beta_1\ treatment\_did \\
-        & + \beta_2\ time\_period \\
-        & + \beta_3\ treatment\_did \cdot time\_period \\
+        & + \beta_1\ treatmentdid \\
+        & + \beta_2\ timeperiod \\
+        & + \beta_3\ treatmentdid \cdot timeperiod \\
         & + u
 \end{align*}
 $$
@@ -135,6 +135,7 @@ import pandas as pd
 import statsmodels.api as sm
 
 index = ['R 2016', 'R 2020', 'D 2016', 'D 2020'] # for readability, not necessary
+
 X = pd.DataFrame({'treatment': [0, 0, 1, 1], 'time period': [0, 1, 0, 1]}, index=index)
 X['interaction'] = X['treatment'] * X['time period']
 X['const'] = 1 # will create constant column [1, 1, 1, 1]
@@ -144,6 +145,7 @@ R2016 = 62_984_828
 R2020 = 74_216_154
 D2016 = 65_853_514
 D2020 = 81_268_924
+
 y = pd.DataFrame({'votes': [R2016, R2020, D2016, D2020]}, index=index)
 
 print(sm.OLS(y, X[['const', 'treatment', 'time period', 'interaction']]).fit().params)
